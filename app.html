@@ -3,106 +3,180 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ahrefs URL Keywords</title>
-<style>
-:root{--bg:#f6f8fc;--card:#fff;--text:#172033;--muted:#667085;--line:#dfe5ee;--accent:#315efb;--good:#137a4b;--bad:#c43f3f}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
-.wrap{max-width:1800px;width:96vw;margin:20px auto;padding:0 14px}
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-h1{margin:0 0 6px;font-size:28px}
-.lead,.help,.status{color:var(--muted)}
-.lead{margin:0 0 18px}.help,.status{font-size:12px;line-height:1.5}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-button{border:0;border-radius:9px;padding:11px 15px;font-weight:700;cursor:pointer}
-.primary{background:var(--accent);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
-button:disabled{opacity:.45;cursor:not-allowed}
-input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff;margin-top:7px;font:inherit}
-textarea{min-height:126px;resize:vertical;line-height:1.45}
-.url-separator{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--muted);font-size:12px}
-.url-separator:before,.url-separator:after{content:"";height:1px;background:var(--line);flex:1}
-.inline-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.inline-actions button{padding:7px 10px;font-size:11px}
-.mapping{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.hidden{display:none!important}
-.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}.kpi .v{font-size:22px;font-weight:800}
-.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}.toolbar input{max-width:320px;margin:0}.toolbar select{max-width:220px;margin:0}
-.tablewrap{max-height:78vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
-.keyword-tablewrap{height:72vh;min-height:680px;max-height:980px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
-table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{position:sticky;top:0;background:#fafbfc;z-index:2}
-.good{color:var(--good)}.bad{color:var(--bad)}.keyword-details{background:#fbfcff;border:1px solid var(--line);border-radius:10px;padding:14px}.details-row td{background:#fbfcff}
-.keyword-pager{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}.keyword-pager .help{margin-right:auto}.keyword-pager button{padding:7px 10px;font-size:11px}
-.source-file-name{overflow-wrap:anywhere}.source-file-date{margin-top:2px;font-size:10.5px;line-height:1.2;color:#8a94a6;white-space:nowrap;font-weight:400}.source-file-date.snapshot{color:#7b8495}.source-file-date.file-date{color:#98a1b2;font-style:italic}
-@media(max-width:900px){.grid,.mapping,.kpis{grid-template-columns:1fr 1fr}.wrap{width:100%;padding:0 10px}.keyword-tablewrap{height:68vh;min-height:520px}}
-@media(max-width:600px){.grid,.mapping,.kpis{grid-template-columns:1fr}}
-</style>
+<title>Ahrefs + Senuto — przypisywanie fraz do URL-i</title>
+<link rel="stylesheet" href="./app-v2.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="wrap">
-<h1>Ahrefs — przypisywanie fraz do URL-i</h1>
-<p class="lead">Wgraj listę URL-i lub wklej adresy ręcznie, a następnie dodaj jeden lub wiele eksportów Organic keywords z Ahrefs. Aplikacja scali dane i przypisze wszystkie znalezione frazy do każdego adresu.</p>
-<div class="grid">
-  <div class="card">
-    <strong>1. Lista URL-i</strong>
-    <div class="help">Wgraj CSV/TXT albo wklej adresy ręcznie. Nagłówek nie jest wymagany. Możesz też użyć obu metod jednocześnie — duplikaty zostaną usunięte.</div>
-    <input id="aCatFile" type="file" accept=".csv,.txt">
-    <div class="url-separator">lub wklej adresy</div>
-    <textarea id="aCatPaste" placeholder="https://example.pl/kategoria-1&#10;https://example.pl/kategoria-2&#10;https://example.pl/kategoria-3"></textarea>
-    <div class="inline-actions"><button id="clearCatFile" class="secondary" type="button">Wyczyść plik</button><button id="clearCatPaste" class="secondary" type="button">Wyczyść wklejone URL-e</button></div>
-    <div id="aCatStatus" class="status"></div>
+  <div class="header">
+    <div>
+      <h1>Ahrefs + Senuto — przypisywanie fraz do URL-i</h1>
+      <p class="lead">Jedna aplikacja do analizy Ahrefs, Senuto oraz wspólnego porównania fraz dla tego samego URL-a.</p>
+    </div>
+    <div class="help-card">
+      <strong>Jak to działa?</strong>
+      <p>Łączymy frazy po kluczu <b>URL + fraza</b>. Jeśli ta sama fraza występuje w Ahrefs i Senuto dla tego samego adresu, dane z obu źródeł są pokazane w jednym wierszu.</p>
+    </div>
   </div>
-  <div class="card">
-    <strong>2. Eksporty Ahrefs — Organic keywords</strong>
-    <div class="help">Możesz wgrać jeden lub wiele plików CSV/TXT jednocześnie.</div>
-    <input id="aAhrefsFile" type="file" accept=".csv,.txt" multiple>
-    <div id="aAhrefsStatus" class="status"></div><div id="aAhrefsFilesList" class="help" style="margin-top:6px"></div>
+
+  <div class="input-grid">
+    <div class="card input-card">
+      <strong>1. Lista URL-i</strong>
+      <div class="desc">Wgraj CSV/TXT albo wklej adresy ręcznie. Możesz użyć obu metod jednocześnie — duplikaty zostaną usunięte.</div>
+      <input id="aCatFile" type="file" accept=".csv,.txt">
+      <div class="url-separator">lub wklej adresy</div>
+      <textarea id="aCatPaste" placeholder="https://example.pl/kategoria-1&#10;https://example.pl/kategoria-2"></textarea>
+      <div class="inline-actions">
+        <button id="clearCatFile" class="ghost" type="button">Wyczyść plik</button>
+        <button id="clearCatPaste" class="ghost" type="button">Wyczyść wklejone URL-e</button>
+      </div>
+      <div id="aCatStatus" class="status" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card input-card">
+      <div class="section-title">
+        <div class="title-left">
+          <strong>2A. Eksporty</strong>
+          <span class="brand-logo ahrefs"><img src="https://ahrefs.com/assets/esbuild/primary-light-S5ZNO3MC.png" alt="Ahrefs" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback">Ahrefs</span></span>
+        </div>
+      </div>
+      <div class="desc">Możesz wgrać jeden lub wiele plików CSV/TXT Organic keywords.</div>
+      <input id="aAhrefsFile" type="file" accept=".csv,.txt" multiple>
+      <div id="aAhrefsStatus" class="status" style="margin-top:8px"></div>
+      <div id="aAhrefsFilesList" class="help" style="margin-top:6px"></div>
+    </div>
+
+    <div class="card input-card">
+      <div class="section-title">
+        <div class="title-left">
+          <strong>2B. Raport</strong>
+          <span class="brand-logo senuto"><img src="https://www.senuto.com/img/presskit/senuto-logo-wh.svg" alt="Senuto" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback" style="color:#fff">SENUTO</span></span>
+          <span class="help">opcjonalnie</span>
+        </div>
+      </div>
+      <div class="desc">Wgraj raport „Analiza widoczności” w formacie XLSX.</div>
+      <input id="sFile" type="file" accept=".xlsx,.xls">
+      <div id="sStatus" class="status" style="margin-top:8px"></div>
+      <div id="sFileMeta" class="help" style="margin-top:6px"></div>
+    </div>
   </div>
-  <div class="card"><strong>Wynik</strong><div class="help">URL → frazy, pozycje, Volume, Traffic oraz TOP3/TOP10/TOP20/TOP50/TOP100.</div></div>
+
+  <div class="card mapping-card">
+    <strong>Mapowanie kolumn</strong>
+    <div class="help" style="margin-top:5px">Aplikacja automatycznie rozpoznaje kolumny. Przed analizą możesz poprawić przypisania ręcznie.</div>
+
+    <div class="mapping-block">
+      <div class="section-title" style="margin-bottom:8px">
+        <div class="title-left">
+          <span class="brand-logo mini ahrefs"><img src="https://ahrefs.com/assets/esbuild/primary-light-S5ZNO3MC.png" alt="Ahrefs" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback">Ahrefs</span></span>
+        </div>
+      </div>
+      <div class="mapping">
+        <div><label>Keyword</label><select id="aKw"></select></div>
+        <div><label>Position</label><select id="aPos"></select></div>
+        <div><label>Volume</label><select id="aVol"></select></div>
+        <div><label>Ranking URL</label><select id="aUrl"></select></div>
+        <div><label>Traffic</label><select id="aTraffic"></select></div>
+      </div>
+    </div>
+
+    <div id="sMappingWrap" class="mapping-block hidden">
+      <div class="section-title" style="margin-bottom:8px">
+        <div class="title-left">
+          <span class="brand-logo mini senuto"><img src="https://www.senuto.com/img/presskit/senuto-logo-wh.svg" alt="Senuto" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback" style="color:#fff">SENUTO</span></span>
+        </div>
+      </div>
+      <div class="mapping">
+        <div><label>Keyword</label><select id="sKw"></select></div>
+        <div><label>Position</label><select id="sPos"></select></div>
+        <div><label>Volume</label><select id="sVol"></select></div>
+        <div><label>Ranking URL</label><select id="sUrl"></select></div>
+        <div><label>Traffic</label><select id="sTraffic"></select></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="assignBtn" class="primary" disabled>Przypisz frazy do URL-i</button>
+    <button id="expAssignSummary" class="secondary" disabled>Pobierz podsumowanie CSV</button>
+    <button id="expAssignKeywords" class="secondary" disabled>Pobierz wszystkie frazy CSV</button>
+  </div>
+
+  <div id="exportMessage" class="card"></div>
+
+  <div id="assignResults" class="hidden results-shell">
+    <div class="results-head">
+      <div>
+        <div class="results-title">
+          <h2>Wyniki</h2>
+          <div class="help">Przełącz źródło danych lub otwórz widok porównawczy.</div>
+        </div>
+        <div class="source-switch">
+          <button class="view-btn active" data-view="ahrefs">
+            <span class="brand-logo ahrefs"><img src="https://ahrefs.com/assets/esbuild/primary-light-S5ZNO3MC.png" alt="Ahrefs" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback">Ahrefs</span></span>
+          </button>
+          <button class="view-btn" data-view="senuto">
+            <span class="brand-logo senuto"><img src="https://www.senuto.com/img/presskit/senuto-logo-wh.svg" alt="Senuto" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback" style="color:#fff">SENUTO</span></span>
+          </button>
+          <button class="view-btn" data-view="compare">
+            <span class="brand-logo mini ahrefs"><img src="https://ahrefs.com/assets/esbuild/primary-light-S5ZNO3MC.png" alt="Ahrefs" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback">Ahrefs</span></span>
+            <span>+</span>
+            <span class="brand-logo mini senuto"><img src="https://www.senuto.com/img/presskit/senuto-logo-wh.svg" alt="Senuto" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="brand-fallback" style="color:#fff">SENUTO</span></span>
+          </button>
+        </div>
+
+        <div id="compareFilters" class="compare-filters hidden">
+          <button class="compare-filter active" data-filter="all">Wszystkie</button>
+          <button class="compare-filter" data-filter="common">Wspólne</button>
+          <button class="compare-filter" data-filter="ahrefsOnly">Tylko w Ahrefs</button>
+          <button class="compare-filter" data-filter="senutoOnly">Tylko w Senuto</button>
+        </div>
+      </div>
+
+      <div class="help-card" style="min-width:320px">
+        <strong id="viewInfoTitle">Aktywny widok: Ahrefs</strong>
+        <p id="viewInfo">Wyświetlane są wyłącznie dane z Ahrefs.</p>
+      </div>
+    </div>
+
+    <div id="snapshotStrip" class="snapshot-strip"></div>
+    <div id="kpis" class="kpis"></div>
+
+    <div id="compareInfo" class="info-strip hidden">
+      <span class="info-dot">i</span>
+      <span>W trybie porównawczym jedna fraza = jeden wiersz. Dane są łączone po kluczu <b>URL + fraza</b>.</span>
+    </div>
+
+    <div class="toolbar">
+      <input id="aSearch" placeholder="Filtruj URL...">
+      <select id="aFilter">
+        <option value="">Wszystkie URL-e</option>
+        <option value="with">Tylko z frazami</option>
+        <option value="without">Tylko bez fraz</option>
+      </select>
+      <span id="aCount" class="help"></span>
+      <div class="toolbar-spacer"></div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>URL</th><th>Liczba fraz</th><th>TOP3</th><th>TOP10</th><th>TOP20</th><th>TOP50</th><th>TOP100</th><th>Suma Volume</th><th>Najlepsza pozycja</th><th>Najmocniejsza fraza</th><th>Frazy dla URL-a</th>
+          </tr>
+        </thead>
+        <tbody id="assignBody"></tbody>
+      </table>
+    </div>
+
+    <div id="legend" class="legend hidden">
+      <span><i class="dot good"></i> Lepsza pozycja w Senuto</span>
+      <span><i class="dot bad"></i> Gorsza pozycja w Senuto</span>
+      <span><i class="dot neutral"></i> Brak różnicy</span>
+    </div>
+  </div>
 </div>
-<div class="card">
-  <strong>Mapowanie kolumn</strong>
-  <div class="help" style="margin-top:6px">Jak to działa? Aplikacja automatycznie rozpoznaje kolumny w pliku. Przed analizą sprawdź mapowanie i w razie potrzeby popraw je ręcznie.</div>
-  <div class="mapping" style="margin-top:10px"><div><label>Lista URL-i</label><div class="help" style="margin-top:9px">Wykrywanie automatyczne</div></div><div><label>Keyword</label><select id="aKw"></select></div><div><label>Position</label><select id="aPos"></select></div><div><label>Volume</label><select id="aVol"></select></div><div><label>Ranking URL</label><select id="aUrl"></select></div></div><div class="mapping" style="margin-top:10px"><div><label>Traffic (opcjonalnie)</label><select id="aTraffic"></select></div></div>
-</div>
-<div class="actions"><button id="assignBtn" class="primary" disabled>Przypisz frazy do URL-i</button><button id="expAssignSummary" class="secondary" disabled>Pobierz podsumowanie CSV</button><button id="expAssignKeywords" class="secondary" disabled>Pobierz wszystkie frazy CSV</button></div>
-<div id="exportMessage" class="card" style="display:none"></div>
-<div id="assignResults" class="hidden"><div class="kpis"><div class="kpi"><div class="help">URL-e</div><div id="kCats" class="v">0</div></div><div class="kpi"><div class="help">Z frazami</div><div id="kWith" class="v good">0</div></div><div class="kpi"><div class="help">Bez fraz</div><div id="kWithout" class="v bad">0</div></div><div class="kpi"><div class="help">Łącznie fraz</div><div id="kKeywords" class="v">0</div></div><div class="kpi"><div class="help">Frazy TOP10</div><div id="kTop10" class="v">0</div></div><div class="kpi"><div class="help">Suma Volume</div><div id="kVolume" class="v">0</div></div></div><div class="toolbar"><input id="aSearch" placeholder="Filtruj URL..."><select id="aFilter"><option value="">Wszystkie</option><option value="with">Tylko z frazami</option><option value="without">Tylko bez fraz</option></select><span id="aCount" class="help"></span></div><div class="tablewrap"><table><thead><tr><th>URL</th><th>Liczba fraz</th><th>TOP3</th><th>TOP10</th><th>TOP20</th><th>TOP50</th><th>TOP100</th><th>Suma Volume</th><th>Najlepsza pozycja</th><th>Najmocniejsza fraza</th><th>Frazy dla URL-a</th></tr></thead><tbody id="assignBody"></tbody></table></div></div>
-</div>
-<script>
-const S={aCats:null,fileUrls:[],pastedUrls:[],detectedUrls:[],aAhrefsFiles:[],aAhrefs:null,assignSummary:[],assignKeywords:[],keywordPages:{}};
-const KEYWORD_PAGE_SIZE=100;
-const $=id=>document.getElementById(id);
-function normUrl(x){try{let s=(x||'').trim().replace(/\/+$/,'');let u=new URL(s);u.hash='';u.search='';return(u.origin+u.pathname).replace(/\/+$/,'').toLowerCase()}catch(e){return(x||'').trim().replace(/\/+$/,'').toLowerCase()}}
-function looksLikeUrl(x){const s=String(x??'').replace(/^\uFEFF/,'').trim().replace(/^["']|["']$/g,'');return/^https?:\/\/[^ ]+/i.test(s)||/^www\.[^ ]+/i.test(s)}
-function cleanPossibleUrl(x){let s=String(x??'').replace(/^\uFEFF/,'').trim().replace(/^["']|["']$/g,'').trim();if(/^www\./i.test(s))s='https://'+s;return s}
-function extractUrlsFromParsed(parsed){if(!parsed)return[];const found=[];for(const h of(parsed.headers||[]))if(looksLikeUrl(h))found.push(normUrl(cleanPossibleUrl(h)));for(const row of(parsed.data||[]))for(const value of Object.values(row))if(looksLikeUrl(value))found.push(normUrl(cleanPossibleUrl(value)));return[...new Set(found.filter(x=>/^https?:\/\//i.test(x)))]}
-function extractUrlsFromText(text){const found=[];for(const raw of String(text||'').split(/[\r\n\t;,]+/)){const value=raw.trim();if(looksLikeUrl(value))found.push(normUrl(cleanPossibleUrl(value)))}return[...new Set(found.filter(x=>/^https?:\/\//i.test(x)))]}
-function refreshDetectedUrls(){S.pastedUrls=extractUrlsFromText($('aCatPaste').value);S.detectedUrls=[...new Set([...S.fileUrls,...S.pastedUrls])];const parts=[];if(S.fileUrls.length)parts.push(`plik: ${S.fileUrls.length.toLocaleString('pl-PL')}`);if(S.pastedUrls.length)parts.push(`wklejone: ${S.pastedUrls.length.toLocaleString('pl-PL')}`);$('aCatStatus').textContent=`Wykryto ${S.detectedUrls.length.toLocaleString('pl-PL')} unikalnych URL-i${parts.length?' • '+parts.join(' • '):''}`;$('assignBtn').disabled=!(S.detectedUrls.length&&S.aAhrefs)}
-function num(x,d=0){let n=parseFloat(String(x??'').replace(/\s/g,'').replace(',','.'));return Number.isFinite(n)?n:d}
-function detectDelim(t){let f=(t.split(/\r?\n/).find(x=>x.trim())||''),a=[',',';','\t'];return a.sort((x,y)=>(f.split(y).length-f.split(x).length))[0]}
-function parseCSV(text){const d=detectDelim(text),rows=[];let row=[],field='',q=false;for(let i=0;i<text.length;i++){let ch=text[i],nx=text[i+1];if(ch==='"'){if(q&&nx==='"'){field+='"';i++}else q=!q}else if(ch===d&&!q){row.push(field);field=''}else if((ch==='\n'||ch==='\r')&&!q){if(ch==='\r'&&nx==='\n')i++;row.push(field);field='';if(row.some(v=>v!==''))rows.push(row);row=[]}else field+=ch}if(field||row.length){row.push(field);rows.push(row)}const headers=(rows[0]||[]).map((x,i)=>(i===0?x.replace(/^\uFEFF/,''):x).trim()),data=rows.slice(1).map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]??'').replace(/^\uFEFF/,'').trim()])));return{headers,data}}
-function bestHeader(h,keys){let l=h.map(x=>x.toLowerCase());for(const k of keys){let i=l.findIndex(x=>x===k);if(i>=0)return h[i]}for(const k of keys){let i=l.findIndex(x=>x.includes(k));if(i>=0)return h[i]}return h[0]||''}
-function opts(sel,h,p,optional=false){sel.innerHTML=(optional?'<option value="">— brak —</option>':'')+h.map(x=>`<option>${x}</option>`).join('');if(h.includes(p))sel.value=p}
-function sourceFileMeta(name,lastModified){const m=String(name||'').match(/(\d{4})-(\d{2})-(\d{2})(?:[_-](\d{2})-(\d{2})(?:-(\d{2}))?)?/);if(m){const date=m[4]?`${m[3]}.${m[2]}.${m[1]} • ${m[4]}:${m[5]}`:`${m[3]}.${m[2]}.${m[1]}`;return{date,kind:'snapshot'}}if(!lastModified)return{date:'',kind:'unknown'};const d=new Date(lastModified);if(Number.isNaN(d.getTime()))return{date:'',kind:'unknown'};return{date:`${d.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'})} • ${d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}`,kind:'file'}}
-function sourceDateLabel(r){if(r.sourceKind==='snapshot'&&r.sourceDate)return`<div class="source-file-date snapshot">Snapshot z ${r.sourceDate}</div>`;if(r.sourceKind==='file'&&r.sourceDate)return`<div class="source-file-date file-date">Brak daty snapshotu • data pliku: ${r.sourceDate}</div>`;return'<div class="source-file-date file-date">Brak daty snapshotu</div>'}
-async function readFile(input){let f=input.files[0];if(!f)return null;return parseCSV(await f.text())}
-async function readFiles(input){const files=[...input.files];if(!files.length)return{files:[],merged:null};const parsed=[];for(const f of files){const meta=sourceFileMeta(f.name,f.lastModified);parsed.push({name:f.name,sourceDate:meta.date,sourceKind:meta.kind,parsed:parseCSV(await f.text())})}const firstHeaders=parsed[0].parsed.headers,mergedData=[];for(const item of parsed)for(const row of item.parsed.data)mergedData.push({...row,__source_file:item.name,__source_date:item.sourceDate,__source_kind:item.sourceKind});return{files:parsed,merged:{headers:firstHeaders,data:mergedData}}}
-function csvEscape(v){let s=String(v??'');return/[;"\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
-function downloadCSV(name,rows,cols){if(!rows?.length){alert('Brak danych do pobrania.');return}const lines=[cols.map(x=>csvEscape(x[1])).join(';')];for(const r of rows)lines.push(cols.map(x=>csvEscape(r[x[0]])).join(';'));const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},2000)}
-function safeFileName(url){try{const u=new URL(url);return(u.hostname+u.pathname).replace(/[^a-zA-Z0-9._-]+/g,'_').slice(0,150)||'url'}catch{return'url'}}
-function showMessage(t){$('exportMessage').style.display='block';$('exportMessage').textContent=t}
-function downloadKeywordsForUrl(url){downloadCSV('FRAZY_'+safeFileName(url)+'.csv',S.assignKeywords.filter(x=>x.url===url),[['url','URL'],['keyword','Fraza'],['position','Pozycja'],['volume','Volume'],['traffic','Traffic'],['sourceFile','Plik źródłowy']])}
-function downloadOnlyKeywordList(url){downloadCSV('LISTA_FRAZ_'+safeFileName(url)+'.csv',S.assignKeywords.filter(x=>x.url===url).sort((a,b)=>a.position-b.position||b.volume-a.volume).map(x=>({keyword:x.keyword})),[['keyword','Fraza']])}
-$('aCatFile').onchange=async()=>{S.aCats=await readFile($('aCatFile'));S.fileUrls=extractUrlsFromParsed(S.aCats);refreshDetectedUrls()};
-$('aCatPaste').oninput=refreshDetectedUrls;
-$('clearCatFile').onclick=()=>{$('aCatFile').value='';S.aCats=null;S.fileUrls=[];refreshDetectedUrls()};
-$('clearCatPaste').onclick=()=>{$('aCatPaste').value='';refreshDetectedUrls()};
-$('aAhrefsFile').onchange=async()=>{const loaded=await readFiles($('aAhrefsFile'));S.aAhrefsFiles=loaded.files;S.aAhrefs=loaded.merged;if(!S.aAhrefs){$('assignBtn').disabled=true;return}const h=S.aAhrefs.headers;$('aAhrefsStatus').textContent=`${S.aAhrefsFiles.length} plik(ów) • ${S.aAhrefs.data.length.toLocaleString('pl-PL')} wierszy łącznie`;$('aAhrefsFilesList').textContent=S.aAhrefsFiles.map(x=>`${x.name} (${x.parsed.data.length.toLocaleString('pl-PL')} wierszy)`).join(' • ');opts($('aKw'),h,bestHeader(h,['keyword','fraza','query']));opts($('aPos'),h,bestHeader(h,['position','pos','pozycja']));opts($('aVol'),h,bestHeader(h,['volume','search volume','wolumen']));opts($('aUrl'),h,bestHeader(h,['url','current url','ranking url']));opts($('aTraffic'),h,bestHeader(h,['traffic','organic traffic']),true);refreshDetectedUrls()};
-$('assignBtn').onclick=()=>{const cats=[...S.detectedUrls],set=new Set(cats),best=new Map();S.keywordPages={};for(const r of S.aAhrefs.data){let url=normUrl(r[$('aUrl').value]);if(!set.has(url))continue;let kw=(r[$('aKw').value]||'').trim();if(!kw)continue;let o={url,keyword:kw,position:num(r[$('aPos').value],101),volume:num(r[$('aVol').value],0),traffic:$('aTraffic').value?num(r[$('aTraffic').value],0):0,sourceFile:r.__source_file||'',sourceDate:r.__source_date||'',sourceKind:r.__source_kind||'unknown'},key=url+'|||'+kw.toLowerCase(),p=best.get(key);if(!p||o.position<p.position)best.set(key,o)}S.assignKeywords=[...best.values()].sort((a,b)=>a.url.localeCompare(b.url)||a.position-b.position);let by=new Map();for(const r of S.assignKeywords){if(!by.has(r.url))by.set(r.url,[]);by.get(r.url).push(r)}S.assignSummary=cats.map(url=>{let rr=by.get(url)||[],strongest=rr.length?[...rr].sort((a,b)=>b.volume-a.volume||a.position-b.position)[0].keyword:'';return{url,keywords:rr.length,top3:rr.filter(x=>x.position<=3).length,top10:rr.filter(x=>x.position<=10).length,top20:rr.filter(x=>x.position<=20).length,top50:rr.filter(x=>x.position<=50).length,top100:rr.filter(x=>x.position<=100).length,sumVolume:rr.reduce((s,x)=>s+x.volume,0),bestPos:rr.length?Math.min(...rr.map(x=>x.position)):'',strongest}});renderAssign();$('assignResults').classList.remove('hidden');$('expAssignSummary').disabled=$('expAssignKeywords').disabled=false;$('kCats').textContent=cats.length;$('kWith').textContent=S.assignSummary.filter(x=>x.keywords>0).length;$('kWithout').textContent=S.assignSummary.filter(x=>x.keywords===0).length;$('kKeywords').textContent=S.assignKeywords.length;$('kTop10').textContent=S.assignKeywords.filter(x=>x.position<=10).length;$('kVolume').textContent=Math.round(S.assignKeywords.reduce((s,x)=>s+x.volume,0)).toLocaleString('pl-PL');showMessage(`Analiza zakończona: ${cats.length} URL-i, ${S.assignSummary.filter(x=>x.keywords>0).length} z przypisanymi frazami.`)};
-function renderAssign(){let q=$('aSearch').value.trim().toLowerCase(),f=$('aFilter').value,rows=S.assignSummary.filter(x=>(!q||x.url.includes(q))&&(!f||(f==='with'?x.keywords>0:x.keywords===0)));rows.sort((a,b)=>b.keywords-a.keywords||b.sumVolume-a.sumVolume);$('assignBody').innerHTML=rows.map((x,idx)=>{const detailId='details_'+idx,rowKeywords=S.assignKeywords.filter(r=>r.url===x.url).sort((a,b)=>a.position-b.position||b.volume-a.volume),pageKey=encodeURIComponent(x.url),page=Math.max(0,Math.min(S.keywordPages[pageKey]||0,Math.max(0,Math.ceil(rowKeywords.length/KEYWORD_PAGE_SIZE)-1))),start=page*KEYWORD_PAGE_SIZE,pageRows=rowKeywords.slice(start,start+KEYWORD_PAGE_SIZE),totalPages=Math.max(1,Math.ceil(rowKeywords.length/KEYWORD_PAGE_SIZE)),details=rowKeywords.length?`<div class="keyword-details hidden" id="${detailId}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><div><strong>Frazy przypisane do URL-a (${rowKeywords.length})</strong> <button class="secondary keyword-list-download" data-url="${encodeURIComponent(x.url)}" style="padding:5px 9px;font-size:11px">Pobierz frazy</button></div><button class="secondary per-url-download" data-url="${encodeURIComponent(x.url)}" style="padding:7px 10px">Pobierz pełny CSV</button></div><div class="keyword-tablewrap"><table><thead><tr><th>Fraza</th><th>Pozycja</th><th>Volume</th><th>Traffic</th><th>Plik źródłowy</th></tr></thead><tbody>${pageRows.map(r=>`<tr><td>${r.keyword}</td><td>${r.position}</td><td>${Math.round(r.volume).toLocaleString('pl-PL')}</td><td>${Math.round(r.traffic).toLocaleString('pl-PL')}</td><td><div class="source-file-name">${r.sourceFile}</div>${sourceDateLabel(r)}</td></tr>`).join('')}</tbody></table></div><div class="keyword-pager"><span class="help">Wiersze ${start+1}–${Math.min(start+KEYWORD_PAGE_SIZE,rowKeywords.length)} z ${rowKeywords.length} • 100 wierszy na stronę</span>${totalPages>1?`<button class="secondary keyword-page" data-urlkey="${pageKey}" data-page="${page-1}" ${page===0?'disabled':''}>← Poprzednie 100</button><span class="help">Strona ${page+1} / ${totalPages}</span><button class="secondary keyword-page" data-urlkey="${pageKey}" data-page="${page+1}" ${page>=totalPages-1?'disabled':''}>Następne 100 →</button>`:''}</div></div>`:'<div class="help">Brak fraz dla tego URL-a.</div>';return`<tr><td>${x.url}</td><td>${x.keywords}</td><td>${x.top3}</td><td>${x.top10}</td><td>${x.top20}</td><td>${x.top50}</td><td>${x.top100}</td><td>${Math.round(x.sumVolume).toLocaleString('pl-PL')}</td><td>${x.bestPos}</td><td>${x.strongest}</td><td>${x.keywords?`<button class="secondary show-keywords" data-target="${detailId}" style="padding:7px 10px">Pokaż frazy (${x.keywords})</button>`:'<button class="secondary" disabled style="padding:7px 10px">Brak fraz</button>'}</td></tr><tr class="details-row"><td colspan="11" style="padding:0"><div style="padding:0 10px 10px">${details}</div></td></tr>`}).join('');$('aCount').textContent=`Widoczne: ${rows.length} / ${S.assignSummary.length}`;document.querySelectorAll('.show-keywords').forEach(btn=>btn.onclick=()=>{const el=$(btn.dataset.target),hidden=el.classList.contains('hidden');el.classList.toggle('hidden');btn.textContent=hidden?btn.textContent.replace('Pokaż frazy','Ukryj frazy'):btn.textContent.replace('Ukryj frazy','Pokaż frazy')});document.querySelectorAll('.keyword-list-download').forEach(btn=>btn.onclick=()=>downloadOnlyKeywordList(decodeURIComponent(btn.dataset.url)));document.querySelectorAll('.per-url-download').forEach(btn=>btn.onclick=()=>downloadKeywordsForUrl(decodeURIComponent(btn.dataset.url)));document.querySelectorAll('.keyword-page').forEach(btn=>btn.onclick=()=>{if(btn.disabled)return;S.keywordPages[btn.dataset.urlkey]=Math.max(0,Number(btn.dataset.page)||0);renderAssign();setTimeout(()=>{const row=[...document.querySelectorAll('.show-keywords')].find(b=>{const tr=b.closest('tr');return tr&&encodeURIComponent(tr.cells[0].textContent.trim())===btn.dataset.urlkey});if(row){row.click();const detail=$(row.dataset.target);if(detail)detail.scrollIntoView({block:'nearest'})}},0)})}
-$('aSearch').oninput=renderAssign;$('aFilter').onchange=renderAssign;
-$('expAssignSummary').onclick=()=>downloadCSV('URL_PODSUMOWANIE.csv',S.assignSummary,[['url','URL'],['keywords','Liczba fraz'],['top3','TOP3'],['top10','TOP10'],['top20','TOP20'],['top50','TOP50'],['top100','TOP100'],['sumVolume','Suma Volume'],['bestPos','Najlepsza pozycja'],['strongest','Najmocniejsza fraza']]);
-$('expAssignKeywords').onclick=()=>downloadCSV('WSZYSTKIE_URL_FRAZY.csv',S.assignKeywords,[['url','URL'],['keyword','Fraza'],['position','Pozycja'],['volume','Volume'],['traffic','Traffic'],['sourceFile','Plik źródłowy']]);
-refreshDetectedUrls();
-</script>
+<script src="./app-v2.js?v=1"></script>
 </body>
 </html>
